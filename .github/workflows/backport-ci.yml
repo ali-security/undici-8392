@@ -1,0 +1,49 @@
+name: Backport CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 20, 22]
+    uses: ./.github/workflows/test.yml
+    with:
+      node-version: ${{ matrix.node-version }}
+      runs-on: ubuntu-latest
+
+  build:
+    name: Build & upload artifact
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build:node
+
+      - name: Pack
+        run: npm pack
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: undici-dist
+          path: |
+            undici.js
+            *.tgz
