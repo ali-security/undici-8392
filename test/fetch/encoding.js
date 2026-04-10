@@ -22,7 +22,7 @@ test('content-encoding header is case-iNsENsITIve', async (t) => {
     gzip.pipe(brotli).pipe(res)
 
     gzip.write(text)
-    gzip.end(() => brotli.flush())
+    gzip.end()
   }).listen(0)
 
   t.after(closeServerAsPromise(server))
